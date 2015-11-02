@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Abastecimiento</title>
+    
+    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="w3.css">
+    <link rel="stylesheet" href="stdtheme.css" />
+    <link rel="stylesheet" href="progressBar.css"/>
+    
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="bootstrap-theme.min.css">
+
+    <style>
+        #cuerpo{
+            style=padding:15px;
+            padding-bottom:40px;
+            margin-bottom:40px;
+            background-color:#f1f1f1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+        #textareaCodeSQL{
+            font-size: 15px;
+            font-family: Consolas,"courier new";
+            height: 140px;
+            width: 100%;
+            border: 1px solid #d3d3d3;
+            resize: none;
+        }
+        #resultSQL {
+            font-size:14px;
+            font-family:Verdana, Geneva, Tahoma, Arial, Helvetica, sans-serif;
+            background-color: #f1f1f1;
+            height:auto;
+            width:auto;
+        }
+        #iframeResultSQL {
+            display:none;
+            background-color: #ffffff;
+            height:95%;
+            min-height:400px;
+            top:25px;
+            width:100%;
+            border:1px solid #d3d3d3;
+        }
+        #divResultSQL {
+            background-color: #ffffff;
+            border:1px solid #d3d3d3;
+            overflow:auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-10">
+                <div id="cuerpo">
+                    <form target="view" id="tryitform" name="tryitform" onsubmit="validateForm();">
+                        <h3>SQL Statement:</h3>
+                        <textarea id="textareaCodeSQL" wrap="logical">SELECT * FROM Customers;
+                        </textarea>
+                    </form>
+                    <button class="submit" type="button" onclick="SQLSubmit()">Run SQL &raquo;</button>
+                    <h3>Result:</h3>
+                    <div id="resultSQL">
+                        <iframe id="iframeResultSQL" frameborder="0" name="view"></iframe>
+                        <div id="divResultSQL">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-2">
+              <div id="dbInfo">
+                <div style="font-size:16px;">Your Database:
+                </div>
+                <div>
+                  <div id="yourDB" style="margin-top:10px;margin-bottom:20px;"></div>
+                  <div id="yourRC" style="margin-top:10px;margin-bottom:20px;"></div>
+                  <div id="yourIX" style="margin-top:10px;margin-bottom:20px;"></div>
+                  <button title="Restore the database back to its original content" id="restoreDBBtn" class="submit" type="button" onclick="WebSQL1.w3ClearDatabase()" style="display:none;">Restore Database</button>
+                  <input type="file" name="files[]" id="files" class="center-block" multiple style="display:none;">
+                  <output id='list'></output>
+                  <div id="progress_bar"><div class="percent">0%</div></div>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="Database.js"></script>
+    <script>
+        
+        var WebSQLOK = !!window.openDatabase; // Check browser is supported SQLite or not.
+        
+       
+        if (WebSQLOK === true) {
+            WebSQL1 = new WebSQLInit(); //crear la DB y las funciones
+        } else {
+            alert('No soporta SQLite');
+        }
+
+        //Cuando hago click en el boton "Run SQL"
+        function SQLSubmit() {
+            var txt;
+            if (WebSQLOK === true) {
+                WebSQL1.runSQL(); // ejecuta la sentencia SQL ingresada
+            } else {
+                alert('No soporta SQLite');
+            }
+        }
+        
+
+        
+        function WriteDBInfo() {
+            var txt;
+            if (WebSQLOK === true) {
+                document.getElementById("iframeResultSQL").style.display="none";
+                document.getElementById("divResultSQL").style.display="block";
+                document.getElementById("restoreDBBtn").style.display="inline";
+                document.getElementById("files").style.display="inline";
+                WebSQL1.myDatabase();
+            } else {
+                alert('No soporta SQLite');
+            }
+        }
+
+        WriteDBInfo();
+        document.getElementById('files').addEventListener('change',handleFileSelect, false);
+    </script>
+    <script src="jquery.js"></script>
+    <script src="bootstrap.min.js"></script>
+
+</body>
+</html>
