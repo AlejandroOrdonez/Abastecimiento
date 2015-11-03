@@ -631,70 +631,93 @@ function onError(tx, error){
 }
 
 function handleFileSelect(evt){
-    if(window.File && window.FileReader && window.FileList && window.Blob){
-        //Se debe verificar extensión, tipo de archivo, formato de columnas y cantidad de columnas
-        var files = evt.target.files; // FileList object
-        // files is a FileList of File objects. List some properties.
-        var output = [];
+	var i = 0;
+	if(window.File && window.FileReader && window.FileList && window.Blob){
+		//Se debe verificar extensión, tipo de archivo, formato de columnas y cantidad de columnas
+		var files = evt.target.files; // FileList object
+		// files is a FileList of File objects. List some properties.
+		var output = [];
+		reader = new FileReader();
+		reader.onerror = errorHandler;
+		reader.onprogress = updateProgress;
+		reader.onabort = function(e) {
+			alert('File read cancelled');
+		};
+		reader.onloadstart = function(e) {
+			document.getElementById('progress_bar').className = 'loading';
+		};
+		reader.onload = function(e) {
+			// Ensure that the progress bar displays 100% at the end.
+			progress.style.width = '100%';
+			progress.textContent = '100%';
+			setTimeout("document.getElementById('progress_bar').className='';", 2000);
+			resultado = e.target.result;
+			switch(verificarEstructura(resultado)){
+				case 1://Materiales
+					insertRecordMaterial(resultado);
+					break;
+				case 2://Pedidos
+					insertRecordME2L(resultado);
+					break;
+				case 3://Reservas
+					insertRecordMB25(resultado);
+					break;
+				case 4://Traslados
+					insertRecordVL10B(resultado);
+					break;
+				case 5://Solpeds
+					insertRecordZOR(resultado);
+					break;
+			}
+			if(i<files.length && files[i].type==='text/plain'){//Solo los texto plano
+				output.push('<li><strong>', escape(files[i].name), '</strong></li>');
+				/***************************************************************/
+				// Reset progress indicator on new file selection.
+				progress.style.width = '0%';
+				progress.textContent = '0%';
+				reader.readAsText(files[i],"UTF-8");// UTF-8, UTF-16, UNICODE, ANSI
+				console.log("tabla actual " + i);
+				i++;
+			}
+		}
 
-        for (var i = 0, f; f = files[i]; i++) {
-            if(f.type==='text/plain'){//Solo los texto plano
-                output.push('<li><strong>', escape(f.name), '</strong></li>');
-                /***************************************************************/
-                // Reset progress indicator on new file selection.
-                progress.style.width = '0%';
-                progress.textContent = '0%';
-
-                reader = new FileReader();
-                reader.onerror = errorHandler;
-                reader.onprogress = updateProgress;
-                reader.onabort = function(e) {
-                alert('File read cancelled');
-                };
-                reader.onloadstart = function(e) {
-                    document.getElementById('progress_bar').className = 'loading';
-                };
-                reader.onload = function(e) {
-                    // Ensure that the progress bar displays 100% at the end.
-                    progress.style.width = '100%';
-                    progress.textContent = '100%';
-                    setTimeout("document.getElementById('progress_bar').className='';", 2000);
-                    resultado = e.target.result;
-                    switch(verificarEstructura(resultado)){
-                    	case 1://Materiales
-                    		insertRecordMaterial(resultado);
-                    		break;
-                    	case 2://Pedidos
-                    		insertRecordME2L(resultado);
-                    		break;
-                    	case 3://Reservas
-                    		insertRecordMB25(resultado);
-                    		break;
-                    	case 4://Traslados
-                    		insertRecordVL10B(resultado);
-                    		break;
-                    	case 5://Solpeds
-                    		insertRecordZOR(resultado);
-                    		break;
-                    }
-                }
-
-                reader.readAsText(f,"UTF-8");// UTF-8, UTF-16, UNICODE, ANSI
-            }
-        /*escape(f.name),f.type,f.size,f.lastModifiedDate.toLocaleDateString()*/
-        }
-
-        document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
-    }else{
-        alert('The File APIs are not fully supported in this browser.');
-    }
+		if(i<files.length && files[i].type==='text/plain'){//Solo los texto plano
+			output.push('<li><strong>', escape(files[i].name), '</strong></li>');
+			/***************************************************************/
+			// Reset progress indicator on new file selection.
+			progress.style.width = '0%';
+			progress.textContent = '0%';
+			reader.readAsText(files[i],"UTF-8");// UTF-8, UTF-16, UNICODE, ANSI
+			i++;
+			console.log("tabla actual " + i);
+		}
+		/*escape(f.name),f.type,f.size,f.lastModifiedDate.toLocaleDateString()*/
+		document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';	
+	}else{
+		alert('The File APIs are not fully supported in this browser.');
+	}
 }
+
 
 var resultado;
 var reader;
 var progress = document.querySelector('.percent');
 
 function abortRead() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     reader.abort();
 }
 
