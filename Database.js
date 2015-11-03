@@ -11,14 +11,14 @@ var createZOR = "CREATE TABLE IF NOT EXISTS ZOR(idZOR INTEGER PRIMARY KEY AUTOIN
 var createCentros = "CREATE TABLE IF NOT EXISTS Centros(idCentros INTEGER PRIMARY KEY AUTOINCREMENT, Ce TEXT, Nombre TEXT)";
 var createGpo = "CREATE TABLE IF NOT EXISTS Gpo(idGpo INTEGER PRIMARY KEY AUTOINCREMENT,GCp TEXT, Denominacion TEXT)";
 
-var insertZOR = "INSERT INTO ZOR (Material,Ce,Ce_desc,Alm,FechaSol, Tipo,Sol,Pos,Text_breve,UM,CantSol,Soli,Cesta,Pedido,Il,Texto,S,Lib,B1,EstLib,El,B,Con, LibInc,CtdPed, Gr,Modif,UM2,Grp,Grp_desc) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";//30 fields
 var insertSMateriales = "INSERT INTO Materiales (Material,UMB,stock,Pto,Max,Cap,Texto_breve,Cod,Ce,Alm,PMV) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";//11 fields
-var insertSVL10B = "INSERT INTO VL10B (material,creado_por,causante,cant_pend,um,denominacion,destinatario,almacen,pos,centro_sum,fecha_base, fecha_nec) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; //12 fields
 var insertSME2L = "INSERT INTO ME2L (Material,Ce,Alm,Prov,Tipo,Pedido,Pos,Text_breve, CantPed,Grp,FechaDoc,UMP,UMA,PorEntr,CantUMA,NroNec,TipImp,Lib,Moneda, Precio,CantBase,EstrLib) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"; //22 Fields
 var insertSMB25 = "INSERT INTO MB25 (material,usuario,reserva,cant_dif,centro,almacen,centro_recep,almacen_recep,posicion,texto_breve,um,fecha_base, fecha_nec,clase_mov,Imputacion,CantNec,CantRed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)"; //17 fields
-
+var insertSVL10B = "INSERT INTO VL10B (material,creado_por,causante,cant_pend,um,denominacion,destinatario,almacen,pos,centro_sum,fecha_base, fecha_nec) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; //12 fields
+var insertSZOR = "INSERT INTO ZOR (Material,Ce,Ce_desc,Alm,FechaSol, Tipo,Sol,Pos,Text_breve,UM,CantSol,Soli,Cesta,Pedido,Il,Texto,S,Lib,B1,EstLib,El,B,Con, LibInc,CtdPed, Gr,Modif,UM2,Grp,Grp_desc) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";//30 fields
 var insertSCentros = "INSERT INTO Centros(Ce,Nombre) VALUES(?,?)";
 var insertSGpo = "INSERT INTO Gpo(Gcp,Denominacion) VALUES(?,?)";
+
 var insertSConsultas = "INSERT INTO Consultas(statements,nombresCampos, Descripcion) VALUES(?,?,?)";
 
 
@@ -438,7 +438,6 @@ function WebSQLInit() {
 
 // funcion que inserta los registro de la tabla Materiales masivamente 
 function insertRecordMaterial(resultado){
-    //var resultado=e.target.result;
     aux='';
     var campos = new Array();
     var bandera = true;
@@ -449,16 +448,177 @@ function insertRecordMaterial(resultado){
                 bandera = false;
             }
             aux+=resultado[i];
-    	    if(resultado[i]=='\t'||resultado[i]==','){//final de campo
+    	    if(resultado[i]=='\t'){//final de campo
                 aux = aux.substring(0,aux.length-1);
     	        campos.push(aux);
     	        aux='';
     	    }
     	    if(resultado[i]=='\n'){//final de linea
     	        campos.push(aux);//el último campo termina junto con la líena
-                console.log(campos);
     	        tx.executeSql(insertSMateriales, campos,null,onError);
                 campos = [];
+    	        aux='';
+    	    }
+        }
+	});
+}
+
+function insertRecordME2L(resultado){
+    aux='';
+    var campos = new Array();
+    var bandera = true;
+    Database.transaction(function (tx) {
+        for(i=0;i<=resultado.length;i++){
+            if(bandera){//esto es para saltar los nombres de los campos
+                i = resultado.indexOf('\n') + 1;
+                bandera = false;
+            }
+            aux+=resultado[i];
+            if(resultado[i]=='\t'){//final de campo
+            	aux = aux.substring(0,aux.length-1);
+                campos.push(aux);
+    	        aux='';
+    	    }
+    	    if(resultado[i]=='\n'){//final de linea
+    	        campos.push(aux);//el último campo termina junto con la líena
+
+                tx.executeSql(insertSME2L,campos,null,onError);
+                campos = []; //vacio el vector
+    	        aux='';
+    	    }
+        }
+	});
+}
+
+function insertRecordMB25(resultado){
+    aux='';
+    var campos = new Array();
+    var bandera = true;
+    Database.transaction(function (tx) {
+        for(i=0;i<=resultado.length;i++){
+            if(bandera){//esto es para saltar los nombres de los campos
+                i = resultado.indexOf('\n') + 1;
+                bandera = false;
+            }
+            aux+=resultado[i];
+            if(resultado[i]=='\t'){//final de campo
+            	aux = aux.substring(0,aux.length-1);
+                campos.push(aux);
+    	        aux='';
+    	    }
+    	    if(resultado[i]=='\n'){//final de linea
+    	        campos.push(aux);//el último campo termina junto con la líena
+
+                tx.executeSql(insertSMB25,campos,null,onError);
+                campos = []; //vacio el vector
+    	        aux='';
+    	    }
+        }
+	});
+}
+
+function insertRecordVL10B(resultado){
+    aux='';
+    var campos = new Array();
+    var bandera = true;
+    Database.transaction(function (tx) {
+        for(i=0;i<=resultado.length;i++){
+            if(bandera){//esto es para saltar los nombres de los campos
+                i = resultado.indexOf('\n') + 1;
+                bandera = false;
+            }
+            aux+=resultado[i];
+            if(resultado[i]=='\t'){//final de campo
+            	aux = aux.substring(0,aux.length-1);
+    	        campos.push(aux);
+    	        aux='';
+    	    }
+    	    if(resultado[i]=='\n'){//final de linea
+    	        campos.push(aux);//el último campo termina junto con la líena
+
+                tx.executeSql(insertSVL10B,campos,null,onError);
+                campos = []; //vacio el vector
+    	        aux='';
+    	    }
+        }
+	});
+}
+
+function insertRecordZOR(resultado){
+    aux='';
+    var campos = new Array();
+    var bandera = true;
+    Database.transaction(function (tx) {
+        for(i=0;i<=resultado.length;i++){
+            if(bandera){//esto es para saltar los nombres de los campos
+                i = resultado.indexOf('\n') + 1;
+                bandera = false;
+            }
+            aux+=resultado[i];
+            if(resultado[i]=='\t'){//final de campo
+            	aux = aux.substring(0,aux.length-1);
+    	        campos.push(aux);
+    	        aux='';
+    	    }
+    	    if(resultado[i]=='\n'){//final de linea
+    	        campos.push(aux);//el último campo termina junto con la líena
+
+                tx.executeSql(insertSZOR,campos,null,onError);
+                campos = []; //vacio el vector
+    	        aux='';
+    	    }
+        }
+	});
+}
+
+function insertRecordCentros(resultado){
+    aux='';
+    var campos = new Array();
+    var bandera = true;
+    Database.transaction(function (tx) {
+        for(i=0;i<=resultado.length;i++){
+            if(bandera){//esto es para saltar los nombres de los campos
+                i = resultado.indexOf('\n') + 1;
+                bandera = false;
+            }
+            aux+=resultado[i];
+            if(resultado[i]=='\t'){//final de campo
+            	aux = aux.substring(0,aux.length-1);
+                campos.push(aux);
+    	        aux='';
+    	    }
+    	    if(resultado[i]=='\n'){//final de linea
+    	        campos.push(aux);//el último campo termina junto con la líena
+
+                tx.executeSql(insertSCentros,campos,null,onError);
+                campos = []; //vacio el vector
+    	        aux='';
+    	    }
+        }
+	});
+}
+
+function insertRecordGpo(resultado){
+    aux='';
+    var campos = new Array();
+    var bandera = true;
+    Database.transaction(function (tx) {
+        for(i=0;i<=resultado.length;i++){
+            if(bandera){//esto es para saltar los nombres de los campos
+                i = resultado.indexOf('\n') + 1;
+                bandera = false;
+            }
+            aux+=resultado[i];
+            if(resultado[i]=='\t'){//final de campo
+            	aux = aux.substring(0,aux.length-1);
+                campos.push(aux);
+                aux='';
+    	    }
+    	    if(resultado[i]=='\n'){//final de linea
+    	        campos.push(aux);//el último campo termina junto con la líena
+
+                tx.executeSql(insertSGpo,campos,null,onError);
+                campos = []; //vacio el vector
     	        aux='';
     	    }
         }
@@ -470,7 +630,6 @@ function onError(tx, error){
     alert(error.message);
 }
 
-/*Carga de archivos******************************************************************************/
 function handleFileSelect(evt){
     if(window.File && window.FileReader && window.FileList && window.Blob){
         //Se debe verificar extensión, tipo de archivo, formato de columnas y cantidad de columnas
@@ -501,18 +660,26 @@ function handleFileSelect(evt){
                     progress.textContent = '100%';
                     setTimeout("document.getElementById('progress_bar').className='';", 2000);
                     resultado = e.target.result;
-                    verificarEstructura(resultado);
-                    //insertRecordMaterial(resultado);
+                    switch(verificarEstructura(resultado)){
+                    	case 1://Materiales
+                    		insertRecordMaterial(resultado);
+                    		break;
+                    	case 2://Pedidos
+                    		insertRecordME2L(resultado);
+                    		break;
+                    	case 3://Reservas
+                    		insertRecordMB25(resultado);
+                    		break;
+                    	case 4://Traslados
+                    		insertRecordVL10B(resultado);
+                    		break;
+                    	case 5://Solpeds
+                    		insertRecordZOR(resultado);
+                    		break;
+                    }
                 }
 
                 reader.readAsText(f,"UTF-8");// UTF-8, UTF-16, UNICODE, ANSI
-
-                /*var lector=new FileReader();
-                lector.addEventListener('load',insertRecordMaterialFast, false);
-                //lector.addEventListener('load',insertRecordME2L, false);
-                lector.readAsText(archivo,"UTF-8");// UTF-8, UTF-16, UNICODE, ANSI
-                */
-            /***************************************************************/            
             }
         /*escape(f.name),f.type,f.size,f.lastModifiedDate.toLocaleDateString()*/
         }
@@ -560,7 +727,7 @@ function updateProgress(evt) {
 
 
 function verificarEstructura(resultado){
-    var aux='';
+    var aux='', i, NroTabla = 0;
     var campos = new Array();
     i = resultado.indexOf('\n') + 1;//asigno la posición despues del primier salto de linea
     while(resultado[i]!=='\n'){
@@ -568,7 +735,55 @@ function verificarEstructura(resultado){
         i++;
     }
     campos = aux.split('\t');
+
     switch(campos.length){
+
+        case 11: //Materiales
+/*Material UMB Libre utiliz. Punto máximo CaP Texto breve de material NºMaterial Ce.  Almacén PrMedioVar
+  1000007  KG  8400.000      0.000 0.000  ND  BACTERICIDA BUSSAN 881  01110105   1002 1129    12.41*/
+            if(/^\d+$/.test(campos[0])&&/^([0-9])*\.([0-9])*$|^([0-9])*$/.test(campos[2])&&campos[8].trim().length===4&&campos[9].trim().length===4){
+               console.log("Archivo de Materiales reconocido.");
+               NroTabla = 1;
+            }else{
+                console.log("Fallo al reconocer archivo de Materiales.");
+            }
+            break;
+
+        case 22: //Pedidos
+/*Material Ce   Alm  proveedor Cl  Documento  Pos Texto breve                      Cantped Grp FechDoc    Umped UmAlm 
+1000022  1001 1125 MINACLAR  ZOP 4500031983 10  TIERRA FILTRANTE DIAFILTER FLO M 42      D14 04/05/2015 T     KG 
+Porentr Cant      Númeronec Tipo de imputación	Ind.liberación	Moneda	Precio neto	Cantidad base	Estrategia liberac.
+26.460  42000.000                               L               ARS     3494.90     1               06*/
+            if(/^\d+$/.test(campos[0])&&campos[2].trim().length===4&&/^\d+$/.test(campos[5])&&/^([0-9])*\.([0-9])*$|^([0-9])*$/.test(campos[8])){
+                console.log("Archivo ME2L reconocido.");
+                NroTabla = 2;
+            }else{
+                console.log("Fallo al reconocer archivo ME2L");
+            }
+            break;
+
+        case 17: //Reservas
+/*Material usuario reserva    Cantdif Ce   Alm  CenRec AlmRec pos Texto breve de material UmBase Fechabase  Fechanec   mov Imp         Cantnec Cantred
+  1030385	 JAGUTI  9500109918	2       1001 1126               1   ARO,PISTON/OEM WESTSTM  C/U    24/01/2015 24/01/2015 201 JA01031006  12      10*/
+           if(/^\d+$/.test(campos[0])){
+                console.log("Archivo MB25 reconocido.");
+                NroTabla = 3;
+            }else{
+                console.log("Fallo al reconocer archivo");
+            }
+            break;
+
+        case 12: //ZUB
+/*Material Creadopor Causante   Cantpend Umbase Denomina  DestinaMcía. Alm  Pos Centrosum Creadoel   Entregas
+  1045747  MAJEREZ   4500045251 20       L      HERBICIDA 1062         11HL 10  1007      23/10/2015 22/11/2015*/            
+            if(/^\d+$/.test(campos[0])&&/^\d+$/.test(campos[2])&&/^([0-9])*\.([0-9])*$|^([0-9])*$/.test(campos[3])){
+                console.log("Archivo VL10B reconocido.");
+                NroTabla = 4;
+            }else{
+                console.log("Fallo al reconocer archivo VL10B");
+            }
+            break;
+
         case 30: //solped
 /*Material Ce   Cen        Alm  Fe.sol.    CDoc Sol      Pos Texto breve   UM  Ctd.sol Solici  Númerodoc  Pedido lib                    Status     S Lib 
 1000619  1001 OperAzúcar 1125 29/06/2015 ZOR  10021740 10  PALLET MADERA C/U 50      ORDONEZ 3000129903	       Petición-oferta/Pedido No tratado N 2	
@@ -577,53 +792,17 @@ B EstadLib EL B Con Libinc Ctd.pedido	Gr. Modif.el   UM  Grupo art. Grupo de art
             
             if(/^\d+$/.test(campos[0])&&campos[3].trim().length===4&&/(^\d{2}\/\d{2}\/\d{4})|(^\d{1}\/\d{2}\/\d{4})/.test(campos[4])&&/^\d+$/.test(campos[6])&&/^([0-9])*\.([0-9])*$|^([0-9])*$/.test(campos[10])){
                 console.log("Archivo de Solpeds reconocido.");
+                NroTabla = 5;
             }else{
                 console.log("Fallo al reconocer archivo de Solpeds.");
             }
-            break;
-        case 11: //Materiales
-/*Material UMB Libre utiliz. Punto máximo CaP Texto breve de material NºMaterial Ce.  Almacén PrMedioVar
-  1000007  KG  8400.000      0.000 0.000  ND  BACTERICIDA BUSSAN 881  01110105   1002 1129    12.41*/
-            if(/^\d+$/.test(campos[0])&&/^([0-9])*\.([0-9])*$|^([0-9])*$/.test(campos[2])&&campos[8].trim().length===4&&campos[9].trim().length===4){
-               console.log("Archivo de Materiales reconocido.");
-            }else{
-                console.log("Fallo al reconocer archivo de Materiales.");
-            }
-            break;
-        case 12: //ZUB
-/*Material Creadopor Causante   Cantpend Umbase Denomina  DestinaMcía. Alm  Pos Centrosum Creadoel   Entregas
-  1045747  MAJEREZ   4500045251 20       L      HERBICIDA 1062         11HL 10  1007      23/10/2015 22/11/2015*/            
-            if(/^\d+$/.test(campos[0])&&/^\d+$/.test(campos[2])&&/^([0-9])*\.([0-9])*$|^([0-9])*$/.test(campos[3])){
-                console.log("Archivo VL10B reconocido.");
-            }else{
-                console.log("Fallo al reconocer archivo VL10B");
-            }
-            break;
-        case 22: //Pedidos
-/*Material Ce   Alm  proveedor Cl  Documento  Pos Texto breve                      Cantped Grp FechDoc    Umped UmAlm 
-1000022  1001 1125 MINACLAR  ZOP 4500031983 10  TIERRA FILTRANTE DIAFILTER FLO M 42      D14 04/05/2015 T     KG 
-Porentr Cant      Númeronec Tipo de imputación	Ind.liberación	Moneda	Precio neto	Cantidad base	Estrategia liberac.
-26.460  42000.000                               L               ARS     3494.90     1               06*/
-            if(/^\d+$/.test(campos[0])&&campos[2].trim().length===4&&/^\d+$/.test(campos[5])&&/^([0-9])*\.([0-9])*$|^([0-9])*$/.test(campos[8])){
-                console.log("Archivo ME2L reconocido.");
-            }else{
-                console.log("Fallo al reconocer archivo ME2L");
-            }
-            break;
-        case 17: //Reservas
-/*Material usuario reserva    Cantdif Ce   Alm  CenRec AlmRec pos Texto breve de material UmBase Fechabase  Fechanec   mov Imp         Cantnec Cantred
-  1030385	 JAGUTI  9500109918	2       1001 1126               1   ARO,PISTON/OEM WESTSTM  C/U    24/01/2015 24/01/2015 201 JA01031006  12      10*/
-           if(/^\d+$/.test(campos[0])){
-                console.log("Archivo MB25 reconocido.");
-            }else{
-                console.log("Fallo al reconocer archivo");
-            }
-            break;
+            break;            
         case 2:
             break;
         default:
             console.log("Archivo no reconocido");
     }
+    return NroTabla;
 }
 /*
 
@@ -638,56 +817,5 @@ para pedido,reserva,causante,material, documentos, pos, mov : /^\d+$/.test("4254
 \D para no dígitos, equivalente a [^0-9]
 \s para espacios en blanco (espacios, tabuladores, etc).
 \S para no espacios en blanco.
-
-M:
-/^\d+$/.test()
--
-/^([0-9])*\.([0-9])*$|^([0-9])*$/.test()
-/^([0-9])*\.([0-9])*$|^([0-9])*$/.test()
-/^([0-9])*\.([0-9])*$|^([0-9])*$/.test()
--
--
--
-.trim().length === 4
-.trim().length === 4
-/^([0-9])*\.([0-9])*$|^([0-9])*$/.test()
-
-Material UMB Libre utiliz. Punto máximo CaP Texto breve de material NºMaterial Ce.  Almacén PrMedioVar
-1000007  KG  8400.000      0.000 0.000  ND  BACTERICIDA BUSSAN 881  01110105   1002 1129    12.41
-
-p:
-Material Ce   Alm  proveedor Cl  Documento  Pos Texto breve                      Cantped Grp FechDoc    Umped UmAlm 
-1000022  1001 1125 MINACLAR  ZOP 4500031983 10  TIERRA FILTRANTE DIAFILTER FLO M 42      D14 04/05/2015 T     KG 
-Porentr Cant      Númeronec Tipo de imputación	Ind.liberación	Moneda	Precio neto	Cantidad base	Estrategia liberac.
-26.460  42000.000                               L               ARS     3494.90     1               06
-
-R:
-Material usuario reserva    Cantdif Ce   Alm  CenRec AlmRec pos Texto breve de material UmBase Fechabase  Fechanec   mov Imp         Cantnec Cantred
-1030385	 JAGUTI  9500109918	2       1001 1126               1   ARO,PISTON/OEM WESTSTM  C/U    24/01/2015 24/01/2015 201 JA01031006  12      10
-
-S:
-Material Ce   Cen        Alm  Fe.sol.    CDoc Sol      Pos Texto breve   UM  Ctd.sol Solici  Númerodoc  Pedido lib                    Status     S Lib 
-1000619  1001 OperAzúcar 1125 29/06/2015 ZOR  10021740 10  PALLET MADERA C/U 50      ORDONEZ 3000129903	       Petición-oferta/Pedido No tratado N 2	
-B EstadLib EL B Con Libinc Ctd.pedido	Gr. Modif.el   UM  Grupo art. Grupo de artículos
-  X        01       No     0.000      DOA	02/07/2015 C/U ABST970VS  Rpto.varios Abast.
-
-Z:
-Material Creadopor Causante   Cantpend Umbase Denomina  DestinaMcía. Alm  Pos Centrosum Creadoel   Entregas
-1045747  MAJEREZ   4500045251 20       L      HERBICIDA 1062         11HL 10  1007      23/10/2015 22/11/2015
-
-
-*/
-
-
-/*
-clase de movimientos ancho:3 y [0-9]
-centro ancho:4 y [0-9]
-Almacen ancho:4
-pedido ancho:10 y [0-9]
-clase de documento ancho:3 y ZOP O ZOI
-precio neto decimal
-código de comprador ancho:3 
-
-Archivo Z(ZUB)
 
 */
