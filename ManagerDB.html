@@ -99,6 +99,7 @@
        
         if (WebSQLOK === true) {
             WebSQL1 = new WebSQLInit(); //crear la DB y las funciones
+            WebSQL1.w3InitDatabase(0);
         } else {
             alert('No soporta SQLite');
         }
